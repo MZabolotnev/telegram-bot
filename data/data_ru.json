@@ -1,0 +1,41 @@
+{
+"MainMenu": [
+  [{"text":"Бронирование столов","callback_data":"booking"}],
+  [{"text":"Посмотреть меню","callback_data":"menu"}],
+  [{"text":"Оставить отзыв","callback_data":"review"}],
+  [{"text":"Посмотреть отзывы","callback_data":"show_review"}],
+  [{"text":"Как нас найти?","callback_data":"find"}]
+],
+
+"Booking": [
+  [{"text":"Забронировать стол","callback_data":"booking_new"}],
+  [{"text":"Отменить бронь","callback_data":"booking_cancel"}],
+  [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
+],
+
+"Booking_new": [
+  [{"text":"Подтвердить бронь","callback_data":"booking_add"}],
+  [{"text":"Выбрать другую дату","callback_data":"booking_new"}],
+  [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
+],
+
+"Booking_cancel_confirm": [
+  [{"text":"Отменить бронь","callback_data":"booking_del"}],
+  [{"text":"Выбрать другую дату","callback_data":"booking_cancel"}],
+  [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
+],
+"Booking__how_many_persons": [
+  [{"text":"1","callback_data":"1"}],
+  [{"text":"2","callback_data":"2"}],
+  [{"text":"3","callback_data":"3"}],
+  [{"text":"4","callback_data":"4"}],
+  [{"text":"5","callback_data":"5"}],
+  [{"text":"6","callback_data":"6"}],
+  [{"text":"7","callback_data":"7"}],
+  [{"text":"8","callback_data":"8"}]
+],
+"Find": [
+  [{"text":"Построить маршрут в google maps","callback_data":"find_route"}],
+  [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
+]
+}
