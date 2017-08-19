@@ -1,14 +1,14 @@
 {
 "MainMenu": [
-  [{"text":"Бронирование столов","callback_data":"booking"}],
+  [{"text":"Бронирование столиков","callback_data":"booking"}],
   [{"text":"Посмотреть меню","callback_data":"menu"}],
-  [{"text":"Оставить отзыв","callback_data":"review"}],
+  [{"text":"Напишите что то про нас :)","callback_data":"review"}],
   [{"text":"Посмотреть отзывы","callback_data":"show_review"}],
   [{"text":"Как нас найти?","callback_data":"find"}]
 ],
 
 "Booking": [
-  [{"text":"Забронировать стол","callback_data":"booking_new"}],
+  [{"text":"Забронировать столик","callback_data":"booking_new"}],
   [{"text":"Отменить бронь","callback_data":"booking_cancel"}],
   [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
 ],

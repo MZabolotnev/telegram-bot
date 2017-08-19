@@ -4,7 +4,7 @@ var Data = require('./data/data_ru.json');
     var bot = new TelegramBot(token, {polling: true});
 
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('botdb', 'test', 'test', {
+const sequelize = new Sequelize('postgres', 'postgres', 'postgres', {
   host: 'localhost',
   dialect: 'postgres',
 
@@ -39,6 +39,9 @@ const Reservation = sequelize.define('reservations', {
   }
 });
 
+
+
+
 const Reviews = sequelize.define('reviews', {
   user_id: {
     type: Sequelize.INTEGER
@@ -50,6 +53,8 @@ const Reviews = sequelize.define('reviews', {
     type: Sequelize.STRING
   }
 });
+
+
 
 const Session = sequelize.define('sessions', {
   user_id: {
@@ -74,6 +79,34 @@ const Session = sequelize.define('sessions', {
     type: Sequelize.JSON
   }
 });
+
+// Reservation.sync({force: true}).then(() => {
+//   return Reservation.create({
+//     user_id: 123,
+//     table_id: 1,
+//     date: new (Date),
+//     time: null
+//   });
+// });
+// Reviews.sync({force: true}).then(() => {
+//   return Reviews.create({
+//     user_id: 123,
+//     review: 'ololo',
+//     user_name: 'ololo'
+//   });
+// });
+// Session.sync({force: true}).then(() => {
+//   return Session.create({
+//     user_id: 123,
+//     state: 'start',
+//     date: new (Date),
+//     free_tables: [],
+//     currentDate: new (Date),
+//     id_edit_message: 123,
+//     dinamic_menu: null
+//   });
+// });
+
 
 var location = {
   latitude: '49.4321835',
@@ -106,10 +139,10 @@ bot.onText(/\/start/, function (msg, match) {
       Session.create({
         user_id: msg.from.id,
         state: 'start',
-        date: null,
+        date: new Date,
         free_tables : [],
         currentDate : new Date,
-        id_edit_message: null,
+        id_edit_message: 123,
         dinamic_menu: {
           reply_markup: {
             inline_keyboard: []
@@ -117,8 +150,13 @@ bot.onText(/\/start/, function (msg, match) {
         }
       }).then(session => {
           getVar(msg.from.id, 'state').then(response => {
-          handlers.status[response](msg, match)
+            var photo = 'assets/hello.png';
+            bot.sendPhoto(msg.from.id, photo, {caption: 'Вас приветствует бар Веселый Енот! У нас самые вкусные бургеры в этом лесу!'}).then(result => {
+              handlers.status[response](msg, match)
+            });
+
         })
+        // handlers.status['start'](msg)
       });
     });
 });
@@ -215,12 +253,12 @@ function temporaryDelete() {
 var handlers = {
 status:
   {
-    start: (msg) => bot.sendMessage(msg.from.id, 'Приветствую вас! Что изволите?', getData(Data.MainMenu)),
+    start: (msg) => bot.sendMessage(msg.from.id, 'Давай помогу!', getData(Data.MainMenu)),
     booking: (msg) => bot.sendMessage(msg.from.id, 'Бронировать стол, или отменить бронь?', getData(Data.Booking)),
-    booking_new: (msg) => bot.sendMessage(msg.from.id, 'Подтвердить бронь, или выбрать другую дату?', getData(Data.Booking_new)),
-    booking_cancel_confirm: (msg) => bot.sendMessage(msg.from.id, 'Подтвердить отмену, или выбрать другую дату?', getData(Data.Booking_cancel_confirm)),
-    booking_how_many_persons: (msg) => bot.sendMessage(msg.from.id, 'Eсть свободные столы! Сколько персон ожидать?', getData(Data.Booking__how_many_persons)),
-    booking_table_choise: (msg) => bot.sendMessage(msg.from.id, 'Выберите доступный столик', dinamic_menu),
+    booking_new: (msg) => bot.sendMessage(msg.from.id, 'Не сомневайтесь, у нас очень круто! Или поменяем дату?', getData(Data.Booking_new)),
+    booking_cancel_confirm: (msg) => bot.sendMessage(msg.from.id, 'Вы точно решили не приходить? Моему другу это не понравится :)', getData(Data.Booking_cancel_confirm)),
+    booking_how_many_persons: (msg) => bot.sendMessage(msg.from.id, 'Я нашел столики для вас! Сколько персон ожидать?', getData(Data.Booking__how_many_persons)),
+    booking_table_choise: (msg) => bot.sendMessage(msg.from.id, 'Я могу предложить эти столики для вас:', dinamic_menu),
     find: (msg) => bot.sendMessage(msg.from.id, 'Построить маршрут для вас?', getData(Data.Find))
 
   }
@@ -305,7 +343,7 @@ bot.on('message', msg => {
  bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     getVar(callbackQuery.from.id, 'state').then(state =>{
       const choice = callbackQuery.data;
-      
+
       if (choice === 'review') {
         setState(callbackQuery.from.id, choice);
         bot.sendMessage(callbackQuery.from.id, 'Просто напишите отзыв тут');
