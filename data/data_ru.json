@@ -1,6 +1,6 @@
 {
 "MainMenu": [
-  [{"text":"Бронирование столов","callback_data":"booking"}],
+  [{"text":"Заказать столик","callback_data":"booking"}],
   [{"text":"Посмотреть меню","callback_data":"menu"}],
   [{"text":"Оставить отзыв","callback_data":"review"}],
   [{"text":"Посмотреть отзывы","callback_data":"show_review"}],
@@ -8,7 +8,7 @@
 ],
 
 "Booking": [
-  [{"text":"Забронировать стол","callback_data":"booking_new"}],
+  [{"text":"Забронировать столик","callback_data":"booking_new"}],
   [{"text":"Отменить бронь","callback_data":"booking_cancel"}],
   [{"text":"Вернуться в главное меню","callback_data":"return_to_main"}]
 ],

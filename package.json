@@ -1,0 +1,27 @@
+{
+  "name": "telegram-bot",
+  "version": "1.0.0",
+  "description": "Write in command-line (linux):  1) npm install node-telegram-bot-api 2) node index.js",
+  "main": "bot.js",
+  "dependencies": {
+    "caminte": "^0.4.0",
+    "node-telegram-bot-api": "^0.27.1",
+    "pg": "^7.1.2",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.5.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MZabolotnev/telegram-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MZabolotnev/telegram-bot/issues"
+  },
+  "homepage": "https://github.com/MZabolotnev/telegram-bot#readme"
+}

@@ -4,7 +4,7 @@ var Data = require('./data/data_ru.json');
     var bot = new TelegramBot(token, {polling: true});
 
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize('botdb', 'test', 'test', {
+const sequelize = new Sequelize('postgres', 'postgres', 'postgres', {
   host: 'localhost',
   dialect: 'postgres',
 
@@ -28,6 +28,12 @@ const Reservation = sequelize.define('reservations', {
   user_id: {
     type: Sequelize.INTEGER
   },
+  user_first_name: {
+    type: Sequelize.STRING
+  },
+  user_last_name: {
+    type: Sequelize.STRING
+  },
   table_id: {
     type: Sequelize.INTEGER
   },
@@ -38,6 +44,9 @@ const Reservation = sequelize.define('reservations', {
     type: Sequelize.TIME
   }
 });
+
+
+
 
 const Reviews = sequelize.define('reviews', {
   user_id: {
@@ -50,6 +59,8 @@ const Reviews = sequelize.define('reviews', {
     type: Sequelize.STRING
   }
 });
+
+
 
 const Session = sequelize.define('sessions', {
   user_id: {
@@ -74,6 +85,36 @@ const Session = sequelize.define('sessions', {
     type: Sequelize.JSON
   }
 });
+
+// Reservation.sync({force: true}).then(() => {
+//   return Reservation.create({
+//     user_id: 123,
+//     user_first_name: 'Abdula',
+//     user_last_name: 'Blablabla',
+//     table_id: 1,
+//     date: new (Date),
+//     time: null
+//   });
+// });
+// Reviews.sync({force: true}).then(() => {
+//   return Reviews.create({
+//     user_id: 123,
+//     review: 'ololo',
+//     user_name: 'ololo'
+//   });
+// });
+// Session.sync({force: true}).then(() => {
+//   return Session.create({
+//     user_id: 123,
+//     state: 'start',
+//     date: new (Date),
+//     free_tables: [],
+//     currentDate: new (Date),
+//     id_edit_message: 123,
+//     dinamic_menu: null
+//   });
+// });
+
 
 var location = {
   latitude: '49.4321835',
@@ -106,33 +147,42 @@ bot.onText(/\/start/, function (msg, match) {
       Session.create({
         user_id: msg.from.id,
         state: 'start',
-        date: null,
+        date: new Date,
         free_tables : [],
         currentDate : new Date,
-        id_edit_message: null,
+        id_edit_message: 123,
         dinamic_menu: {
           reply_markup: {
             inline_keyboard: []
           }
         }
       }).then(session => {
+          console.log('bla bla', session)
           getVar(msg.from.id, 'state').then(response => {
-          handlers.status[response](msg, match)
+            var photo = 'assets/hello.png';
+            bot.sendPhoto(msg.from.id, photo, {caption: 'Вас приветствует бар Веселый Енот! У нас самые вкусные бургеры в этом лесу!'}).then(result => {
+              handlers.status[response](msg, match)
+            });
+
         })
+        // handlers.status['start'](msg)
       });
     });
 });
 
 function getVar(user_id, value_name) {
-  return new Promise(function(resolve, reject) {
-    Session.findOne({
+  // return new Promise(function(resolve, reject) {
+    return Session.findOne({
       where: {
         user_id: user_id
         }
     }).then(session => {
-    resolve(session.get(value_name));
+    // resolve(session.get(value_name));
+      if (session) {
+        return session.get(value_name);
+      }
+      return value_name;
     });
-  });
 }
 
 function setState(user_id, value) {
@@ -206,21 +256,18 @@ function setDate(user_id, value) {
 }
 
 function temporaryDelete() {
-  date = '';
-  free_tables = [];
-  suit_tables = [];
   dinamic_menu.reply_markup.inline_keyboard = []
 }
 
 var handlers = {
 status:
   {
-    start: (msg) => bot.sendMessage(msg.from.id, 'Приветствую вас! Что изволите?', getData(Data.MainMenu)),
+    start: (msg) => bot.sendMessage(msg.from.id, 'Давай помогу!', getData(Data.MainMenu)),
     booking: (msg) => bot.sendMessage(msg.from.id, 'Бронировать стол, или отменить бронь?', getData(Data.Booking)),
-    booking_new: (msg) => bot.sendMessage(msg.from.id, 'Подтвердить бронь, или выбрать другую дату?', getData(Data.Booking_new)),
-    booking_cancel_confirm: (msg) => bot.sendMessage(msg.from.id, 'Подтвердить отмену, или выбрать другую дату?', getData(Data.Booking_cancel_confirm)),
-    booking_how_many_persons: (msg) => bot.sendMessage(msg.from.id, 'Eсть свободные столы! Сколько персон ожидать?', getData(Data.Booking__how_many_persons)),
-    booking_table_choise: (msg) => bot.sendMessage(msg.from.id, 'Выберите доступный столик', dinamic_menu),
+    booking_new: (msg) => bot.sendMessage(msg.from.id, 'Не сомневайтесь, у нас очень круто! Или поменяем дату?', getData(Data.Booking_new)),
+    booking_cancel_confirm: (msg) => bot.sendMessage(msg.from.id, 'Вы точно решили не приходить? Моему другу это не понравится :)', getData(Data.Booking_cancel_confirm)),
+    booking_how_many_persons: (msg) => bot.sendMessage(msg.from.id, 'Я нашел столики для вас! Сколько персон ожидать?', getData(Data.Booking__how_many_persons)),
+    booking_table_choise: (msg) => bot.sendMessage(msg.from.id, 'Я могу предложить эти столики для вас:', dinamic_menu),
     find: (msg) => bot.sendMessage(msg.from.id, 'Построить маршрут для вас?', getData(Data.Find))
 
   }
@@ -276,12 +323,14 @@ bot.on('message', msg => {
       user_name: msg.from.first_name,
       review: msg.text
     }).then(Reviews => {
-        bot.sendMessage(msg.from.id, 'Спасибо за отзыв!');
-        setState(msg.from.id, 'start').then(response => {
-           getVar(msg.from.id, 'state').then(state =>{
-             handlers.status[state](msg);
-           })
-         });
+        bot.sendPhoto(msg.from.id, 'assets/five.jpg', {caption: 'Дай пять! Надеюсь, отзыв хороший ;)'}).then(res => {
+          setState(msg.from.id, 'start').then(response => {
+             getVar(msg.from.id, 'state').then(state =>{
+               handlers.status[state](msg);
+             })
+           });
+        })
+
       });
     }
     else if (state == 'find') {
@@ -305,10 +354,10 @@ bot.on('message', msg => {
  bot.on('callback_query', function onCallbackQuery(callbackQuery) {
     getVar(callbackQuery.from.id, 'state').then(state =>{
       const choice = callbackQuery.data;
-      
+
       if (choice === 'review') {
         setState(callbackQuery.from.id, choice);
-        bot.sendMessage(callbackQuery.from.id, 'Просто напишите отзыв тут');
+        bot.sendMessage(callbackQuery.from.id, 'Просто напишите отзыв тут:');
 
       }
       else if (choice === 'menu') {
@@ -328,7 +377,10 @@ bot.on('message', msg => {
       else if (choice === 'booking') {
         setState(callbackQuery.from.id, 'booking').then(response => {
            getVar(callbackQuery.from.id, 'state').then(state =>{
-             handlers.status[state](callbackQuery);
+             bot.sendPhoto(callbackQuery.from.id, 'assets/tables.jpg', {caption: 'Вот наша уютная планировка :)'}).then(result => {
+               handlers.status[state](callbackQuery);
+             });
+
            })
          });
       }
@@ -351,12 +403,14 @@ bot.on('message', msg => {
       }
       else if (choice === 'booking_new') {
         setState(callbackQuery.from.id, choice);
-        bot.sendMessage(callbackQuery.from.id, 'Выберите дату визита:', getKalendarkeyboard()).then(result => {
-          setMessageId (callbackQuery.from.id, result.message_id).then(response=>{
-            setState(callbackQuery.from.id, 'booking_choise_date');
-          });
+        bot.sendPhoto(callbackQuery.from.id, 'assets/drunk.jpg', {caption: 'Юхху! Давайте оторвемся!)'}).then(result => {
+          bot.sendMessage(callbackQuery.from.id, 'Когда вы хотите нас посетить?', getKalendarkeyboard()).then(result => {
+            setMessageId (callbackQuery.from.id, result.message_id).then(response=>{
+              setState(callbackQuery.from.id, 'booking_choise_date');
+            });
+          })
+        });
 
-        })
       }
       else if (choice === 'booking_cancel') {
         setState(callbackQuery.from.id, choice);
@@ -385,7 +439,9 @@ bot.on('message', msg => {
                         inline_keyboard: inline_keyboard
                         })
                       };
-                    bot.sendMessage(callbackQuery.from.id, 'Какую бронь вы хотите отменить?', keyboard);
+                      bot.sendPhoto(callbackQuery.from.id, 'assets/angry.jpg', {caption: ' Нашему админу это не понравится!'}).then(result => {
+                        bot.sendMessage(callbackQuery.from.id, 'Какую бронь вы хотите отменить?', keyboard);
+                      });
                   });
                   };
               })
@@ -403,7 +459,7 @@ bot.on('message', msg => {
             date: choice
             }
           }).then(result => {
-            bot.sendMessage(callbackQuery.from.id, 'Очень жаль, будем скучать :()').then(msg=>{
+            bot.sendPhoto(callbackQuery.from.id, 'assets/bye.jpg', {caption: 'Очень жаль, будем скучать :('}).then(msg=>{
               setState(callbackQuery.from.id, 'start').then(response => {
                  getVar(callbackQuery.from.id, 'state').then(state =>{
                    handlers.status[state](callbackQuery);
@@ -454,9 +510,13 @@ bot.on('message', msg => {
         var persons = parseInt(choice);
         var suit_tables = [];
         getVar(callbackQuery.from.id, 'free_tables').then(free_tables =>{
+          console.log(suit_tables);
+          console.log(free_tables);
           for (var i = 0; i < free_tables.length; i++) {
             if (free_tables[i].seats >= persons) {
+              console.log('асвободный стол:', free_tables[i])
               suit_tables.push(free_tables[i])
+              console.log('асвободный стол222:', free_tables[i])
               }
           }
           if (suit_tables.length == 0) {
@@ -468,8 +528,15 @@ bot.on('message', msg => {
              });
             }
           else {
+            dinamic_menu = {
+              reply_markup: {
+                inline_keyboard: []
+              }
+            };
             for (var i = 0; i < suit_tables.length; i++) {
-              dinamic_menu.reply_markup.inline_keyboard.push([{"text": 'Стол #' + suit_tables[i].id,"callback_data": String(suit_tables[i].id)}])
+              console.log('клава1:', dinamic_menu.reply_markup);
+              dinamic_menu.reply_markup.inline_keyboard.push([{"text": 'Стол #' + suit_tables[i].id,"callback_data": String(suit_tables[i].id)}]);
+              console.log('клава2:', dinamic_menu.reply_markup);
             };
             setDinamic_menu(callbackQuery.from.id, dinamic_menu).then(result=>{
               setState(callbackQuery.from.id, 'booking_table_choise').then(response => {
@@ -482,13 +549,16 @@ bot.on('message', msg => {
         })
     }
     else if (choice > 0 && choice <= 8 && state == 'booking_table_choise') {
+      console.log(callbackQuery)
       Reservation.create({
         user_id: callbackQuery.from.id,
+        user_first_name: callbackQuery.from.first_name,
+        user_last_name: callbackQuery.from.last_name,
         table_id: choice,
         date: date,
         time: '00:00'
       }).then(reservations => {
-        bot.sendMessage(callbackQuery.from.id, 'Бронь за вами! Ждем вас!').then(msg=>{
+        bot.sendPhoto(callbackQuery.from.id, 'assets/wait.jpeg', {caption: 'Столик забронирован!С нетерпением ждем вас! :)'}).then(msg=>{
           setState(callbackQuery.from.id, 'booking').then(response => {
              getVar(callbackQuery.from.id, 'state').then(state =>{
                handlers.status[state](callbackQuery);
@@ -500,7 +570,7 @@ bot.on('message', msg => {
     else if (choice == 'next_date') {
       currentDate.setDate(currentDate.getDate() + 5);
       getVar(callbackQuery.from.id, 'id_edit_message').then(message_id =>{
-        bot.editMessageText('Выберите дату визита:', {
+        bot.editMessageText('Когда вы хотите нас посетить?', {
           chat_id: callbackQuery.from.id,
           message_id: message_id,
           reply_markup: getKalendarkeyboard().reply_markup
@@ -510,7 +580,7 @@ bot.on('message', msg => {
     else if (choice == 'prev_date') {
       currentDate.setDate(currentDate.getDate() - 5);
       getVar(callbackQuery.from.id, 'id_edit_message').then(message_id =>{
-        bot.editMessageText('Выберите дату визита:', {
+        bot.editMessageText('Когда вы хотите нас посетить?', {
           chat_id: callbackQuery.from.id,
           message_id: message_id,
           reply_markup: getKalendarkeyboard().reply_markup
