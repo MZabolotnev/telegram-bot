@@ -28,6 +28,12 @@ const Reservation = sequelize.define('reservations', {
   user_id: {
     type: Sequelize.INTEGER
   },
+  user_first_name: {
+    type: Sequelize.STRING
+  },
+  user_last_name: {
+    type: Sequelize.STRING
+  },
   table_id: {
     type: Sequelize.INTEGER
   },
@@ -83,6 +89,8 @@ const Session = sequelize.define('sessions', {
 // Reservation.sync({force: true}).then(() => {
 //   return Reservation.create({
 //     user_id: 123,
+//     user_first_name: 'Abdula',
+//     user_last_name: 'Blablabla',
 //     table_id: 1,
 //     date: new (Date),
 //     time: null
@@ -541,13 +549,16 @@ bot.on('message', msg => {
         })
     }
     else if (choice > 0 && choice <= 8 && state == 'booking_table_choise') {
+      console.log(callbackQuery)
       Reservation.create({
         user_id: callbackQuery.from.id,
+        user_first_name: callbackQuery.from.first_name,
+        user_last_name: callbackQuery.from.last_name,
         table_id: choice,
         date: date,
         time: '00:00'
       }).then(reservations => {
-        bot.sendPhoto(callbackQuery.from.id, 'assets/wait.jpeg', {caption: 'С нетерпением ждем вас! :)'}).then(msg=>{
+        bot.sendPhoto(callbackQuery.from.id, 'assets/wait.jpeg', {caption: 'Столик забронирован!С нетерпением ждем вас! :)'}).then(msg=>{
           setState(callbackQuery.from.id, 'booking').then(response => {
              getVar(callbackQuery.from.id, 'state').then(state =>{
                handlers.status[state](callbackQuery);
