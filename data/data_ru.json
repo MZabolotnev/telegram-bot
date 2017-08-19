@@ -1,8 +1,8 @@
 {
 "MainMenu": [
-  [{"text":"Бронирование столиков","callback_data":"booking"}],
+  [{"text":"Заказать столик","callback_data":"booking"}],
   [{"text":"Посмотреть меню","callback_data":"menu"}],
-  [{"text":"Напишите что то про нас :)","callback_data":"review"}],
+  [{"text":"Оставить отзыв","callback_data":"review"}],
   [{"text":"Посмотреть отзывы","callback_data":"show_review"}],
   [{"text":"Как нас найти?","callback_data":"find"}]
 ],
