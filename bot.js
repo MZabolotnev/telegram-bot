@@ -1,6 +1,6 @@
 var TelegramBot = require('node-telegram-bot-api');
 var Data = require('./data/data_ru.json');
-    var token = '443479603:AAFPkbdY9IoantpLfCyl10ltwPyZfCoOpKg';
+    var token = '442842731:AAGHQm8VvbUWwXeI9k2l0wrGq_iAeQUSZg8';
     var bot = new TelegramBot(token, {polling: true});
 
 const Sequelize = require('sequelize');
